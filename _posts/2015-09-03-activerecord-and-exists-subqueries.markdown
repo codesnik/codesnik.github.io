@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "ActiveRecord and `exists` subqueries"
+title:  "ActiveRecord and EXISTS() subqueries"
 date:   2015-09-03 04:12:13
 categories: rails
 ---
