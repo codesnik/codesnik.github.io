@@ -89,4 +89,4 @@ instance as argument for `where(column: ...)`, and it will be inserted into resu
 Resulting in one query, not two, as one could expect, and avoiding returning to your application (possibly
 huge) subquery result.
 
-P.S. Check out [ActiveRecord::PredicateBuilder.register_handler](http://apidock.com/rails/v4.2.1/ActiveRecord/PredicateBuilder/register_handler/class)! Looks like it could be quite useful with some domain specific value objects. Like `Money`, for example. I'll investigate further.
+P.S. Check out [ActiveRecord::PredicateBuilder.register_handler](http://apidock.com/rails/v4.2.1/ActiveRecord/PredicateBuilder/register_handler/class)! Looks like it could be quite useful with some domain specific value objects. Like `Money`, for example. I'll investigate [further](https://gist.github.com/codesnik/2ebba1940c05b08b17f9).
