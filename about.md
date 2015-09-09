@@ -13,10 +13,12 @@ Moscow, Russia
 
 email: aronaxis@gmail.com
 
-I'm a software developer. I specialize in \"dynamic\" languages, server-side web and unix tools development.
+I'm a software engineer. I specialize in \"dynamic\" languages, server-side web and unix tools development.
 
 Job experience
 ==============
+
+---
 
 2014-present: busfor.com
 -----------------------
@@ -31,12 +33,14 @@ Team size: 3 developers
 
 Technologies: Ruby on Rails
 
+---
+
 2010-2014: eviterra.com
 -----------------------
 
 online travel agency, was in top five on Russia market.
 
-### CTO, software architect, and teamlead.
+### CTO, software architect, and teamlead
 
 Learned from scratch a thing or two about airtravel industry, e-commerce, and dealing with obscure proprietary APIs.
 Hired and led a team of six developers, still was the top code contributor.
@@ -47,6 +51,7 @@ Site was highly praised for its user experience, had best conversion and user re
 
 Technologies: Ruby on Rails
 
+---
 
 2009: cheloveche.ru
 -------------------
@@ -61,6 +66,7 @@ Wrote first version, put it live, moved on.
 
 Technologies: Ruby on Rails
 
+---
 
 2008: homepage.ru
 -----------------
@@ -74,6 +80,7 @@ Trained three juniors.
 
 Technologies: Ruby on Rails
 
+---
 
 2008: masterhost.ru
 -------------------
@@ -85,6 +92,7 @@ hosting provider.
 Worked on the web-interface for a web-analytics system \"SpyLog\".
 Technologies: Perl(Catalyst), Ruby on Rails, thrift
 
+---
 
 2006-2007: yandex.ru
 --------------------
@@ -95,6 +103,7 @@ Russian search engine.
 
 Technologies: Perl
 
+---
 
 2006: w-m.ru
 ------------
@@ -104,6 +113,8 @@ web-development company.
 ### Developer
 
 Technologies: Perl
+
+---
 
 2002-2005: freelance
 --------------------
