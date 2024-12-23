@@ -5,36 +5,41 @@ date:   2015-09-03 04:12:13
 categories: rails
 ---
 
+(updated to reflect changes in Rails 7+)
+
 Real world example: We have models `Order` and `Payment`.
 Orders have many payments, so client could try another form of payment if first
 try failed for whatever reason.
 
 {% highlight ruby %}
-class Order < ActiveRecord::Base
+class Order < ApplicationRecord
   has_many :payments
 end
 
-class Payment
+class Payment < ApplicationRecord
   belongs_to :order
   scope :paid, -> { where(state: %W[authorized charged]) }
 end
 {% endhighlight %}
 
-problem: How to fetch only "paid" `orders`? In this case, orders having at least one payment in `'authorized'` or `'charged'` state.
+problem: How to fetch only "paid" orders? In this case, orders having at least one payment in `'authorized'` or `'charged'` state.
 
-First, I've tried to count such orders using activerecord.
+First, I've tried to count such orders using ActiveRecord.
 
 {% highlight ruby %}
-Order.joins(:payments).where(payments: {state: %W[authorized charged]})
-  .count("distinct orders")
+Order.joins(:payments).merge(Payment.paid).distinct.count
+# Order Count (0.3ms)  SELECT COUNT(DISTINCT "orders"."id") FROM "orders"
+#   INNER JOIN "payments" ON "payments"."order_id" = "orders"."id"
+#   WHERE "payments"."state" IN (?, ?)  [["state", "authorized"], ["state", "charged"]]
 {% endhighlight %}
 
-It works, but for some reason resulting join is quite inefficient. And it doesn't help to actually fetch orders. I don't need payments though, I just want to know if corresponding paid payments `exist`!
+It works, but for some reason resulting join is quite inefficient. I don't need payments
+though, I just want to know if corresponding paid payments `exist`!
 
 Let's try plain old SQL (almost):
 
 {% highlight ruby %}
-class Order < ActiveRecord::Base
+class Order < ApplicationRecord
   scope :paid, -> {
     where(
       "EXISTS( SELECT 1 FROM payments WHERE payments.order_id = orders.id" \
@@ -47,27 +52,34 @@ end
 Works much faster! But it isn't very DRY. I had to repeat Payment.state condition. Maybe Arel could help me?
 
 {% highlight ruby %}
-class Order < ActiveRecord::Base
+class Order < ApplicationRecord
   scope :paid, -> {
-    where( Payment.paid.where("payments.order_id = orders.id").exists )
+    where( Payment.paid.where("payments.order_id = orders.id").arel.exists )
   }
 end
+
+Order.paid.to_a
+# Order Load (0.6ms)  SELECT "orders".* FROM "orders" WHERE EXISTS (SELECT "payments".* FROM "payments"
+#   WHERE "payments"."state" IN (?, ?) AND (payments.order_id = orders.id))  [["state", "authorized"], ["state", "charged"]]
 {% endhighlight %}
 
-Turns out, Arel provides `exists` method on all your active record scopes, which returns Arel "node" for `EXISTS(subquery for your scope)`. I just stumbled upon it on Stack Overflow, but couldn't find any mention
+Turns out, Arel provides `exists` method on all your active record scopes, which returns Arel "node" for `EXISTS(subquery for your scope)`.
+I just stumbled upon it on Stack Overflow, but couldn't find any mention
 of that method in Rails Guides or docs.
 
 You can write `"payments.order_id = orders.id"` portion using Arel too, but I don't find it particularly readable:
 
 {% highlight ruby %}
-  ...where(Payment.arel_table[:order_id].eq(Order.arel_table[:id]).exists
+  scope :paid, -> {
+    where( Payment.paid.where( Payment.arel_table[:order_id].eq(table[:id]) ).arel.exists )
+  }
 {% endhighlight %}
 
-But wait! Isn't `EXISTS()` just another form for `IN ()`? Active record already provides us with convenient
+But wait! Could we do without `EXISTS()`, using `IN ()`, for example? Active record already provides us with convenient
 shortcut for `IN (?)` predicates:
 
 {% highlight ruby %}
-class Order < ActiveRecord::Base
+class Order < ApplicationRecord
   scope :paid, -> { where( id: Payment.paid.select(:order_id) ) }
 end
 {% endhighlight %}
@@ -88,5 +100,3 @@ So, what's going on there? One more useful but undocumented feature in active re
 instance as argument for `where(column: ...)`, and it will be inserted into resulting query as `IN(subquery)`.
 Resulting in one query, not two, as one could expect, and avoiding returning to your application (possibly
 huge) subquery result.
-
-P.S. Check out [ActiveRecord::PredicateBuilder.register_handler](http://apidock.com/rails/v4.2.1/ActiveRecord/PredicateBuilder/register_handler/class)! Looks like it could be quite useful with some domain specific value objects. Like `Money`, for example. I'll investigate [further](https://gist.github.com/codesnik/2ebba1940c05b08b17f9).
